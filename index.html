@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FlowDesk — Free Trading Terminal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- KEY GATE -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">FLOW<span>DESK</span></div>
+    <div class="gate-tagline">Free. Real-time. No paywall.</div>
+    <div class="gate-sub">POWERED BY FINNHUB · TRADINGVIEW · 100% FREE</div>
+    <p class="gate-steps">
+      1. Go to <a href="https://finnhub.io" target="_blank">finnhub.io</a> → click <code>Get free API key</code><br>
+      2. Sign up with email — no card, no paywall<br>
+      3. Copy your key from the dashboard &amp; paste below
+    </p>
+    <div class="gate-row">
+      <input id="keyInput" type="text" placeholder="Paste your free Finnhub API key..." autocomplete="off" spellcheck="false"/>
+      <button onclick="submitKey()">LAUNCH →</button>
+    </div>
+    <div id="keyError" class="gate-error"></div>
+    <p class="gate-note">Your key stays in your browser only. Finnhub free tier = 60 calls/min. No card ever required.</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+  <header>
+    <div class="logo">FLOW<span>DESK</span> <span class="free-badge">FREE</span></div>
+    <div class="header-right">
+      <div class="live-chip"><span class="dot"></span>LIVE</div>
+      <div id="mktBadge" class="mkt-badge">CHECKING...</div>
+      <div id="fgWidget" class="fg-widget">
+        <span class="fg-label">SENTIMENT</span>
+        <span id="fgValue" class="fg-value">—</span>
+      </div>
+      <div id="lastUpdate" class="update-time">—</div>
+      <button class="icon-btn" onclick="fullRefresh()" title="Refresh">↻</button>
+      <button class="icon-btn" onclick="changeKey()" title="Settings">⚙</button>
+    </div>
+  </header>
+
+  <div class="ticker-bar">
+    <div class="ticker-inner">
+      <div class="ticker-track" id="tickerTrack">
+        <span class="tick-placeholder">Loading market data...</span>
+      </div>
+    </div>
+  </div>
+
+  <main>
+
+    <nav class="tabs" id="mainTabs">
+      <button class="tab active" onclick="switchTab('prices',this)">PRICES</button>
+      <button class="tab" onclick="switchTab('chart',this)">CHART</button>
+      <button class="tab" onclick="switchTab('pulse',this)">PULSE 🔥</button>
+      <button class="tab" onclick="switchTab('scanner',this)">SCANNER</button>
+      <button class="tab" onclick="switchTab('calendar',this)">CALENDAR</button>
+      <button class="tab" onclick="switchTab('congress',this)">CONGRESS</button>
+      <button class="tab" onclick="switchTab('news',this)">NEWS</button>
+      <button class="tab" onclick="switchTab('plays',this)">PLAYS ⚡</button>
+      <button class="tab" onclick="switchTab('ask',this)">ASK AI 🤖</button>
+    </nav>
+
+    <!-- ══ PRICES ══ -->
+    <div id="pane-prices" class="pane">
+      <div class="add-bar">
+        <input id="symInput" type="text" placeholder="Add ticker — AAPL, TSLA, NVDA, SPY..."/>
+        <button onclick="addSymbol()">+ ADD</button>
+      </div>
+      <div id="addErr" class="err-bar" style="display:none"></div>
+      <div class="pane-note">Tap any card to open its live chart ↓</div>
+      <div id="cardGrid" class="card-grid"></div>
+      <p class="src-note">Live prices via Finnhub · Free tier · Auto-refreshes every 90s</p>
+    </div>
+
+    <!-- ══ CHART ══ -->
+    <div id="pane-chart" class="pane" style="display:none">
+      <div class="chart-controls">
+        <input id="chartSym" type="text" placeholder="Enter symbol — AAPL, SPY, TSLA..." value="SPY"/>
+        <button onclick="loadChart()">LOAD CHART</button>
+      </div>
+      <div class="chart-intervals">
+        <button class="interval-btn active" onclick="setInterval('1',this)">1m</button>
+        <button class="interval-btn" onclick="setInterval('5',this)">5m</button>
+        <button class="interval-btn" onclick="setInterval('15',this)">15m</button>
+        <button class="interval-btn" onclick="setInterval('60',this)">1H</button>
+        <button class="interval-btn" onclick="setInterval('D',this)">1D</button>
+        <button class="interval-btn" onclick="setInterval('W',this)">1W</button>
+      </div>
+      <div id="chartContainer" class="chart-container">
+        <div id="tvChart"></div>
+      </div>
+      <div class="chart-toolbar">
+        <span class="chart-tip">📊 Full TradingView tools — draw, zoom, add indicators, compare symbols. All free.</span>
+      </div>
+      <p class="src-note">Charts powered by TradingView · Free · All indicators included</p>
+    </div>
+
+    <!-- ══ PULSE (Sentiment) ══ -->
+    <div id="pane-pulse" class="pane" style="display:none">
+      <div class="pane-header">
+        <div class="sec-label">MARKET PULSE <span class="new-tag">LIVE</span></div>
+        <button class="small-btn" onclick="loadPulse()">↻ REFRESH</button>
+      </div>
+      <div class="pulse-explainer">
+        Real-time market mood. Tracks Reddit WallStreetBets + StockTwits + news sentiment across your watchlist. No paywall. No BS.
+      </div>
+      <div id="overallMood" class="overall-mood"></div>
+      <div class="sec-label" style="margin-top:16px">TRENDING ON WALLSTREETBETS <span class="new-tag">REDDIT</span></div>
+      <div id="wsbTrending" class="wsb-grid"></div>
+      <div class="sec-label" style="margin-top:16px">WATCHLIST SENTIMENT</div>
+      <div id="sentGrid" class="sent-grid"></div>
+      <p class="src-note">Sentiment via Finnhub free news sentiment + Reddit trending · 100% free</p>
+    </div>
+
+    <!-- ══ SCANNER ══ -->
+    <div id="pane-scanner" class="pane" style="display:none">
+      <div class="pane-header">
+        <div class="sec-label">MOMENTUM SCANNER</div>
+        <button class="small-btn" onclick="loadScanner()">↻ SCAN</button>
+      </div>
+      <div class="scanner-explainer">
+        Flags stocks making significant moves right now. Tap any result to open its chart instantly.
+      </div>
+      <div class="sec-label">MOVERS IN YOUR WATCHLIST</div>
+      <div id="scanResults" class="scan-list"></div>
+      <div class="sec-label" style="margin-top:20px">TOP MARKET MOVERS TODAY</div>
+      <div id="moversGrid" class="movers-grid"></div>
+      <p class="src-note">Data via Finnhub free tier · Tap any card to chart it</p>
+    </div>
+
+    <!-- ══ CALENDAR ══ -->
+    <div id="pane-calendar" class="pane" style="display:none">
+      <div class="pane-header">
+        <div class="sec-label">MARKET CALENDAR <span id="calMonth" class="new-tag"></span></div>
+        <button class="small-btn" onclick="loadCalendar()">↻ REFRESH</button>
+      </div>
+      <div class="sec-label">🏦 EARNINGS THIS MONTH</div>
+      <div id="earnList" class="earn-list"></div>
+      <div class="sec-label" style="margin-top:20px">📅 KEY MACRO EVENTS</div>
+      <div id="macroList" class="macro-list"></div>
+      <p class="src-note">Earnings via Finnhub · Macro dates sourced from Federal Reserve / BLS / CME Group</p>
+    </div>
+
+    <!-- ══ CONGRESS ══ -->
+    <div id="pane-congress" class="pane" style="display:none">
+      <div class="pane-header">
+        <div class="sec-label">CONGRESS TRADES <span class="new-tag">STOCK ACT</span></div>
+        <button class="small-btn" onclick="loadCongress()">↻ REFRESH</button>
+      </div>
+      <div class="congress-explainer">
+        U.S. senators and representatives are required by law (STOCK Act) to disclose stock trades within 45 days. Historically outperforms the market. 100% free, public data.
+      </div>
+      <div id="congList" class="cong-list"></div>
+      <p class="src-note">Data via Finnhub congressional trading endpoint · STOCK Act public disclosures · Free</p>
+    </div>
+
+    <!-- ══ NEWS ══ -->
+    <div id="pane-news" class="pane" style="display:none">
+      <div class="pane-header">
+        <div class="sec-label">MARKET NEWS <span class="sec-count" id="newsCount"></span></div>
+        <button class="small-btn" onclick="loadNews()">↻ REFRESH</button>
+      </div>
+      <div class="news-filter-row">
+        <button class="filter-btn active" onclick="setNewsFilter('all',this)">ALL</button>
+        <button class="filter-btn" onclick="setNewsFilter('bullish',this)">BULLISH</button>
+        <button class="filter-btn" onclick="setNewsFilter('bearish',this)">BEARISH</button>
+      </div>
+      <div id="newsList" class="news-list"></div>
+      <p class="src-note">Sources: Reuters · AP · MarketWatch · Bloomberg · WSJ · Verified financial outlets only</p>
+    </div>
+
+    <!-- ══ PLAYS ══ -->
+    <div id="pane-plays" class="pane" style="display:none">
+      <div class="pane-header">
+        <div class="sec-label">AI PLAYS <span class="new-tag">⚡ ALPHA</span></div>
+        <button class="small-btn" onclick="loadPlays()">↻ REFRESH</button>
+      </div>
+      <div class="plays-explainer">
+        AI-generated trade ideas based on current market conditions, price action, and news sentiment. <strong>Not financial advice.</strong> Always do your own research.
+      </div>
+      <div class="plays-tabs">
+        <button class="plays-tab active" onclick="setPlaysTab('calls',this)">📈 CALLS</button>
+        <button class="plays-tab" onclick="setPlaysTab('puts',this)">📉 PUTS</button>
+        <button class="plays-tab" onclick="setPlaysTab('holds',this)">💎 HOLDS</button>
+      </div>
+      <div id="playsContent" class="plays-content">
+        <div class="empty-state">Tap ↻ Refresh to generate today's AI plays.</div>
+      </div>
+      <p class="src-note disclaimer">⚠ AI-generated trade ideas only. Not financial advice. Past performance ≠ future results. Always manage risk.</p>
+    </div>
+
+    <!-- ══ ASK AI ══ -->
+    <div id="pane-ask" class="pane" style="display:none">
+      <div class="pane-header">
+        <div class="sec-label">ASK AI <span class="new-tag">FREE</span></div>
+      </div>
+      <div class="ask-explainer">
+        Ask anything about trading, stocks, options, market mechanics, or how to use this platform. Powered by Claude AI. Free. No limit.
+      </div>
+      <div class="ask-suggestions">
+        <button class="ask-chip" onclick="askSuggestion(this)">What is a call option?</button>
+        <button class="ask-chip" onclick="askSuggestion(this)">How do I read a chart?</button>
+        <button class="ask-chip" onclick="askSuggestion(this)">What is IV crush?</button>
+        <button class="ask-chip" onclick="askSuggestion(this)">Explain RSI to me</button>
+        <button class="ask-chip" onclick="askSuggestion(this)">What is a short squeeze?</button>
+        <button class="ask-chip" onclick="askSuggestion(this)">How do I use this app?</button>
+        <button class="ask-chip" onclick="askSuggestion(this)">What is support and resistance?</button>
+        <button class="ask-chip" onclick="askSuggestion(this)">Difference between stocks and options</button>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-input-row">
+        <input id="chatInput" type="text" placeholder="Ask anything about trading..." maxlength="500"/>
+        <button id="chatSend" onclick="sendChat()">SEND</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TradingView widget script -->
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
