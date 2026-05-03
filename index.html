@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- KEY GATE -->
+  <div id="gate">
+    <div class="gate-box">
+      <div class="gate-logo">MARKET<span>//</span>TERMINAL</div>
+      <div class="gate-sub">POWERED BY FINNHUB · REAL-TIME DATA</div>
+      <p class="gate-steps">
+        1. Go to <a href="https://finnhub.io" target="_blank">finnhub.io</a> → click <code>Get free API key</code><br>
+        2. Sign up with email (no card needed)<br>
+        3. Copy your key from the dashboard &amp; paste below
+      </p>
+      <div class="gate-row">
+        <input id="keyInput" type="text" placeholder="Paste your Finnhub API key..." autocomplete="off" spellcheck="false" />
+        <button onclick="submitKey()">LAUNCH →</button>
+      </div>
+      <div id="keyError" class="gate-error"></div>
+      <p class="gate-note">Key saved in your browser only. Free tier: 60 calls/min.</p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" style="display:none">
+
+    <!-- HEADER -->
+    <header>
+      <div class="logo">MARKET<span>//</span>TERMINAL</div>
+      <div class="header-right">
+        <div class="live-chip"><span class="dot"></span>LIVE · FINNHUB</div>
+        <div id="mktBadge" class="mkt-badge">CHECKING...</div>
+        <div id="lastUpdate" class="update-time">—</div>
+        <button class="icon-btn" onclick="fullRefresh()" title="Refresh">↻</button>
+        <button class="icon-btn" onclick="changeKey()" title="Change API key">⚙</button>
+      </div>
+    </header>
+
+    <!-- TICKER TAPE -->
+    <div class="ticker-bar">
+      <div class="ticker-inner">
+        <div class="ticker-track" id="tickerTrack">
+          <span class="tick-placeholder">Loading market data...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <main>
+
+      <!-- TABS -->
+      <nav class="tabs">
+        <button class="tab active" data-tab="prices" onclick="switchTab('prices', this)">PRICES</button>
+        <button class="tab" data-tab="news" onclick="switchTab('news', this)">NEWS</button>
+      </nav>
+
+      <!-- PRICES PANE -->
+      <div id="pane-prices" class="pane">
+        <div class="add-bar">
+          <input id="symInput" type="text" placeholder="Add symbol — AMZN, BTC-USD, ETH-USD..." maxlength="15" />
+          <button onclick="addSymbol()">+ ADD</button>
+        </div>
+        <div id="addErr" class="err-bar" style="display:none"></div>
+        <div class="sec-label">WATCHLIST</div>
+        <div id="cardGrid" class="card-grid"></div>
+        <p class="src-note">Live data · Finnhub API · Auto-refreshes every 90s</p>
+      </div>
+
+      <!-- NEWS PANE -->
+      <div id="pane-news" class="pane" style="display:none">
+        <div class="sec-label">
+          MARKET NEWS
+          <span id="newsCount" class="sec-count"></span>
+          <button class="small-btn" onclick="loadNews()">↻ REFRESH</button>
+        </div>
+        <div id="newsList" class="news-list">
+          <div class="empty-state">Switch to this tab to load news.</div>
+        </div>
+        <p class="src-note">General market news · Finnhub API</p>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
